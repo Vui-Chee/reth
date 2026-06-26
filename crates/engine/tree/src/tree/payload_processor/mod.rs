@@ -2,13 +2,15 @@
 
 use super::precompile_cache::PrecompileCacheMap;
 use crate::tree::{
-    payload_processor::prewarm::{PrewarmCacheTask, PrewarmContext, PrewarmMode, PrewarmTaskEvent},
+    payload_processor::{
+        bal::ReceivedBal,
+        prewarm::{PrewarmCacheTask, PrewarmContext, PrewarmMode, PrewarmTaskEvent},
+    },
     sparse_trie::SparseTrieCacheTask,
     CacheWaitDurations, CachedStateCacheMetrics, CachedStateMetrics, CachedStateMetricsSource,
     ExecutionCache, PayloadExecutionCache, SavedCache, StateProviderBuilder, TreeConfig,
     WaitForCaches,
 };
-use alloy_eip7928::bal::DecodedBal;
 use alloy_eips::{eip1898::BlockWithParent, eip4895::Withdrawal};
 use alloy_primitives::B256;
 use crossbeam_channel::{Receiver as CrossbeamReceiver, Sender as CrossbeamSender};
@@ -590,7 +592,7 @@ where
     {
         let mode = if parallel_bal_execution {
             PrewarmMode::BlockAccessList(
-                env.decoded_bal.clone().expect("BAL dispatch implies decoded BAL"),
+                env.received_bal.clone().expect("BAL dispatch implies received BAL"),
             )
         } else if self.disable_transaction_prewarming ||
             env.transaction_count < SMALL_BLOCK_TX_THRESHOLD
@@ -1060,9 +1062,9 @@ pub struct ExecutionEnv<Evm: ConfigureEvm> {
     /// Withdrawals included in the block.
     /// Used to generate prefetch targets for withdrawal addresses.
     pub withdrawals: Option<Vec<Withdrawal>>,
-    /// Optional decoded BAL for the block.
+    /// Optional received BAL for the block.
     /// Used to validate and optimize execution.
-    pub decoded_bal: Option<Arc<DecodedBal>>,
+    pub received_bal: Option<Arc<ReceivedBal>>,
 }
 
 impl<Evm: ConfigureEvm> ExecutionEnv<Evm>
@@ -1080,7 +1082,7 @@ where
             transaction_count: 0,
             gas_used: 0,
             withdrawals: None,
-            decoded_bal: None,
+            received_bal: None,
         }
     }
 }
