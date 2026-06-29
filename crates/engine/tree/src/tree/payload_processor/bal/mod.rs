@@ -5,8 +5,8 @@
 //! main thread commits worker results to a canonical executor in transaction order.
 //!
 //! Consensus validation checks the BAL item-cost bound before this path runs. This path validates
-//! the rebuilt block-level BAL hash after post-execution. It does not yet run per-transaction
-//! fragment checks. It does not yet report rich undeclared-access diagnostics.
+//! committed canonical state against the received BAL after post-execution. It does not yet run
+//! per-transaction fragment checks. It does not yet report rich undeclared-access diagnostics.
 
 mod ordered_outputs;
 mod worker;
